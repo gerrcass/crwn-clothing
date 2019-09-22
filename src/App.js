@@ -16,7 +16,7 @@ class App extends React.Component {
   unsubscribeFromAuth = null
 
   componentDidMount(){
-    const {setCurrentUser} = this.props
+    const {setCurrentUserRedux} = this.props
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth)
@@ -26,20 +26,12 @@ class App extends React.Component {
             id: snapshot.id,
             ...snapshot.data()
           })
-
-          /* this.setState({
-            currentUser: {
-              id: snapshot.id,
-              ...snapshot.data()
-            }
-          }) */
         })
 
       }else{
         /* userAuth should be always null in this case meaning the user logsout
         and we catch that event from our subscriber/observer onAuthStateChanged. */
-        setCurrentUser(userAuth)
-        //this.setState({currentUser:userAuth})
+        setCurrentUserRedux(userAuth)
       }
     })
   }
@@ -48,24 +40,17 @@ class App extends React.Component {
   }
 
   render(){
-    const {currentUserRedux} = this.props
+    const {currentUser} = this.props
     return (
       <div>
         <Header />
         <Switch>
           <Route exact path='/' component={HomePage} />
           <Route path='/shop' component={ShopPage} />
-          {/* {
-            if(!currentUserRedux){
-              return <Route path='/signin' component={SignInAndSignUpPage} />
-            }else{
-              return <Route path='/' component={HomePage} />
-            }
-          } */}
           <Route 
             exact
             path='/signin'
-            render={() => currentUserRedux ? (
+            render={() => currentUser ? (
                 <Redirect to='/' />
               ) : (
                 <SignInAndSignUpPage />
@@ -78,11 +63,15 @@ class App extends React.Component {
     )
   }
 }
+
 const mapDispatchToProps = dispatch => ({
+  /* just to be clear this time I called setCurrentUserRedux instead of setCurrentUser. 
+  But it can be called the same way as the user actions. */
   setCurrentUserRedux: user => dispatch(setCurrentUser(user))
-  //setCurrentUserRedux: user => dispatch({type:'SET_CURRENT_USER',payload:user})
+  /* same as:
+  setCurrentUserRedux: user => dispatch({type:'SET_CURRENT_USER',payload:user}) */
 })
 const mapsStateToProps = ({user}) => ({
-  currentUserRedux: user.currentUser
+  currentUser: user.currentUser
 })
 export default connect(mapsStateToProps,mapDispatchToProps)(App);
