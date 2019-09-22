@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch, Route } from 'react-router'
+import { Switch, Route, Redirect } from 'react-router'
 import { connect } from 'react-redux'
 
 import './App.css';
@@ -22,7 +22,7 @@ class App extends React.Component {
         const userRef = await createUserProfileDocument(userAuth)
 
         userRef.onSnapshot(snapshot => {
-          setCurrentUser({
+          setCurrentUserRedux({
             id: snapshot.id,
             ...snapshot.data()
           })
@@ -48,13 +48,30 @@ class App extends React.Component {
   }
 
   render(){
+    const {currentUserRedux} = this.props
     return (
       <div>
         <Header />
         <Switch>
           <Route exact path='/' component={HomePage} />
           <Route path='/shop' component={ShopPage} />
-          <Route path='/signin' component={SignInAndSignUpPage} />
+          {/* {
+            if(!currentUserRedux){
+              return <Route path='/signin' component={SignInAndSignUpPage} />
+            }else{
+              return <Route path='/' component={HomePage} />
+            }
+          } */}
+          <Route 
+            exact
+            path='/signin'
+            render={() => currentUserRedux ? (
+                <Redirect to='/' />
+              ) : (
+                <SignInAndSignUpPage />
+              )
+            }
+          />
         </Switch>
         
       </div>
@@ -62,7 +79,10 @@ class App extends React.Component {
   }
 }
 const mapDispatchToProps = dispatch => ({
-  setCurrentUser: user => dispatch(setCurrentUser(user))
-
+  setCurrentUserRedux: user => dispatch(setCurrentUser(user))
+  //setCurrentUserRedux: user => dispatch({type:'SET_CURRENT_USER',payload:user})
 })
-export default connect(null,mapDispatchToProps)(App);
+const mapsStateToProps = ({user}) => ({
+  currentUserRedux: user.currentUser
+})
+export default connect(mapsStateToProps,mapDispatchToProps)(App);
