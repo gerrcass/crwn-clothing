@@ -2,11 +2,16 @@ import React from 'react'
 import {Link} from 'react-router-dom'
 import {connect} from 'react-redux'
 
+import { createStructuredSelector } from 'reselect'
+
 import { ReactComponent as Logo} from '../../assets/crown.svg'
 
 import { auth } from '../../firebase/firebase.utils'
 import CartIcon from '../cart-icon/cart-icon.component'
 import CartDropdown from '../cart-dropdown/cart-dropdown.component'
+import { selectCurrentUser } from '../../redux/user/user.selectors'
+import { selectCartHidden } from '../../redux/cart/cart.selectors'
+
 
 import './header.styles.scss'
 
@@ -34,12 +39,12 @@ const Header = ({currentUser,hidden}) => (
     </div>
 )
 
-/* advanced destructuring here: from the state get only user.currentUser and cart.hidden
-(those are the only properties anyway, just for using the ES6 feature below when passing
-same key/value as just one entry
- */
-const mapsStateToProps = ({ user: {currentUser}, cart: {hidden} }) => ({
-    currentUser,
-    hidden    
+/* createStructuredSelector() automatically pass the top level state into each
+subsequent selector to which its respective property should be pointing to. */
+
+const mapsStateToProps = createStructuredSelector({
+    currentUser: selectCurrentUser,
+    hidden: selectCartHidden,
 })
+
 export default connect(mapsStateToProps)(Header)
